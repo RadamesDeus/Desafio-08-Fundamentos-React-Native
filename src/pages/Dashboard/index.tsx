@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
-import { View, Image } from 'react-native';
+import { View, Image, FlatList, Alert } from 'react-native';
 
 import formatValue from '../../utils/formatValue';
 import { useCart } from '../../hooks/cart';
@@ -13,7 +13,7 @@ import {
   Container,
   ProductContainer,
   ProductImage,
-  ProductList,
+  // ProductList,
   Product,
   ProductTitle,
   PriceContainer,
@@ -26,6 +26,7 @@ interface Product {
   title: string;
   image_url: string;
   price: number;
+  quantity: number;
 }
 
 const Dashboard: React.FC = () => {
@@ -34,43 +35,45 @@ const Dashboard: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    async function loadProducts(): Promise<void> {
-      // TODO
-    }
-
-    loadProducts();
+    api.get('products').then(reponse => {
+      setProducts(reponse.data);
+    });
   }, []);
 
   function handleAddToCart(item: Product): void {
-    // TODO
+    addToCart(item);
   }
 
   return (
     <Container>
       <ProductContainer>
-        <ProductList
-          data={products}
-          keyExtractor={item => item.id}
-          ListFooterComponent={<View />}
-          ListFooterComponentStyle={{
-            height: 80,
-          }}
-          renderItem={({ item }) => (
-            <Product>
-              <ProductImage source={{ uri: item.image_url }} />
-              <ProductTitle>{item.title}</ProductTitle>
-              <PriceContainer>
-                <ProductPrice>{formatValue(item.price)}</ProductPrice>
-                <ProductButton
-                  testID={`add-to-cart-${item.id}`}
-                  onPress={() => handleAddToCart(item)}
-                >
-                  <FeatherIcon size={20} name="plus" color="#C4C4C4" />
-                </ProductButton>
-              </PriceContainer>
-            </Product>
-          )}
-        />
+        {products && (
+          <FlatList
+            data={products}
+            keyExtractor={item => item.id}
+            ListFooterComponent={<View />}
+            ListFooterComponentStyle={{
+              height: 80,
+            }}
+            numColumns={2}
+            style={{ flex: 1, padding: 10 }}
+            renderItem={({ item }) => (
+              <Product>
+                <ProductImage source={{ uri: item.image_url }} />
+                <ProductTitle>{item.title}</ProductTitle>
+                <PriceContainer>
+                  <ProductPrice>{formatValue(item.price)}</ProductPrice>
+                  <ProductButton
+                    testID={`add-to-cart-${item.id}`}
+                    onPress={() => handleAddToCart(item)}
+                  >
+                    <FeatherIcon size={20} name="plus" color="#C4C4C4" />
+                  </ProductButton>
+                </PriceContainer>
+              </Product>
+            )}
+          />
+        )}
       </ProductContainer>
       <FloatingCart />
     </Container>
